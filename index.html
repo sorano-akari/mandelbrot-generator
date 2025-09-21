@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マンデルブロ集合ジェネレーター</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            background-color: #222;
+            color: #fff;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        #controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        #controls div {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        label, span {
+            margin-bottom: 5px;
+        }
+        input[type="range"], select, button {
+            width: 200px;
+        }
+        canvas {
+            border: 2px solid #555;
+            box-shadow: 0 0 15px rgba(0,0,0,0.7);
+        }
+        #zoomDisplay {
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>マンデルブロ集合ジェネレーター</h1>
+    <canvas id="mandelbrotCanvas"></canvas>
+    <div id="controls">
+        <div>
+            <label for="maxIterations">最大反復回数:</label>
+            <input type="range" id="maxIterations" min="10" max="2000" value="300">
+            <span id="maxIterationsValue">300</span>
+        </div>
+        <div>
+            <label for="colorPalette">パレット:</label>
+            <select id="colorPalette">
+                <option value="rainbow">虹色</option>
+                <option value="grayscale">グレースケール</option>
+                <option value="fire">炎</option>
+                <option value="sea">海</option>
+                <option value="forest">森</option>
+                <option value="sunset">夕焼け</option>
+                <option value="desert">砂漠</option>
+                <option value="aurora">オーロラ</option>
+                <option value="space">宇宙</option>
+                <option value="candy">キャンディ</option>
+                <option value="sepia">セピア</option>
+                <option value="random">完全ランダム</option>
+                <option value="random1">スムーズランダム</option>
+            </select>
+            <button id="generateRandomPaletteBtn" style="display: none;">ランダム生成</button>
+        </div>
+        <div>
+            <label for="paletteSteps">階調数:</label>
+            <input type="range" id="paletteSteps" min="10" max="300" value="300">
+            <span id="paletteStepsValue">300</span>
+        </div>
+        <div>
+            <label for="powerSelect">指数:</label>
+            <select id="powerSelect">
+                <option value="1.0">1.0</option>
+                <option value="1.5">1.5 (Slow)</option>
+                <option value="2.0" selected>2.0 (Default)</option>
+                <option value="2.5">2.5 (Slow)</option>
+                <option value="3.0">3.0</option>
+                <option value="3.5">3.5 (Slow)</option>
+                <option value="4.0">4.0</option>
+                <option value="4.5">4.5 (Slow)</option>
+                <option value="5.0">5.0</option>
+                <option value="6.0">6.0</option>
+                <option value="7.0">7.0</option>
+                <option value="8.0">8.0</option>
+            </select>
+        </div>
+        <button id="resetBtn">リセット</button>
+        <button id="saveImageBtn">画像を保存</button>
+    </div>
+    <span id="zoomDisplay"></span>
+
+    <script src="script.js"></script>
+</body>
+</html>

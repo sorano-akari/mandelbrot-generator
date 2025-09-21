@@ -230,6 +230,52 @@ function createSmoothRandomPalette(numColors) {
     return palette;
 }
 
+function createCyberpunkPalette(numColors) {
+    const palette = [];
+    for (let i = 0; i < numColors; i++) {
+        const t = i / numColors;
+        let r, g, b;
+        if (t < 0.25) {
+            r = 1.0; g = 0.0; b = 1.0 - t * 4;
+        } else if (t < 0.5) {
+            r = 1.0 - (t - 0.25) * 4; g = 0.0; b = 0.0;
+        } else if (t < 0.75) {
+            r = 0.0; g = (t - 0.5) * 4; b = 0.0;
+        } else {
+            r = 0.0; g = 1.0 - (t - 0.75) * 4; b = 1.0;
+        }
+        palette.push(`rgb(${Math.floor(r * 255)},${Math.floor(g * 255)},${Math.floor(b * 255)})`);
+    }
+    return palette;
+}
+
+function createToxicPalette(numColors) {
+    const palette = [];
+    for (let i = 0; i < numColors; i++) {
+        const t = i / numColors;
+        let r, g, b;
+        if (t < 0.5) {
+            r = t * 2; g = 1.0; b = 0;
+        } else {
+            r = 1.0 - (t - 0.5) * 2; g = 1.0; b = (t - 0.5) * 2;
+        }
+        palette.push(`rgb(${Math.floor(r * 255)},${Math.floor(g * 255)},${Math.floor(b * 255)})`);
+    }
+    return palette;
+}
+
+function createElectricPalette(numColors) {
+    const palette = [];
+    for (let i = 0; i < numColors; i++) {
+        const t = i / numColors;
+        let h = (t * 0.5) + 0.5;
+        let s = 1.0;
+        let v = 1.0;
+        palette.push(hsvToRgb(h, s, v));
+    }
+    return palette;
+}
+
 function regenerateAllPalettes() {
     palettes = {
         rainbow: createRainbowPalette(paletteSteps),
@@ -244,7 +290,10 @@ function regenerateAllPalettes() {
         candy: createCandyPalette(paletteSteps),
         sepia: createSepiaPalette(paletteSteps),
         random: createRandomPalette(paletteSteps),
-        random1: createSmoothRandomPalette(paletteSteps)
+        random1: createSmoothRandomPalette(paletteSteps),
+        cyberpunk: createCyberpunkPalette(paletteSteps),
+        toxic: createToxicPalette(paletteSteps),
+        electric: createElectricPalette(paletteSteps)
     };
 }
 

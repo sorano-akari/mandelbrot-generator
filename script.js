@@ -7,7 +7,7 @@ const generateRandomPaletteBtn = document.getElementById('generateRandomPaletteB
 const paletteStepsSlider = document.getElementById('paletteSteps');
 const paletteStepsValueSpan = document.getElementById('paletteStepsValue');
 const powerSelect = document.getElementById('powerSelect');
-const saveImageBtn = document.getElementById('saveImageBtn');
+const saveImageBtn = document = document.getElementById('saveImageBtn');
 const resetBtn = document.getElementById('resetBtn');
 const zoomDisplay = document.getElementById('zoomDisplay');
 
@@ -383,7 +383,7 @@ function drawMandelbrot() {
                     data[index + 2] = 0;
                 }
             } else {
-                const colorIndex = n % currentPalette.length;
+                const colorIndex = Math.floor(n / maxIterations * currentPalette.length);
                 const color = currentPalette[colorIndex];
                 const rgb = color.match(/\d+/g);
                 data[index] = parseInt(rgb[0]);
@@ -504,7 +504,7 @@ canvas.addEventListener('touchmove', (e) => {
         const scaleFactor = currentPinchDistance / initialPinchDistance;
 
         const currentZoom = (initialMaxX - initialMinX) / (maxX - minX);
-        if (scaleFactor > 1 && currentZoom * scaleFactor > MAX_ZOOM) {
+        if (scaleFactor > 1 && currentZoom * zoomFactor > MAX_ZOOM) {
             return;
         }
 

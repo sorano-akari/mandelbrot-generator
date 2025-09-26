@@ -40,6 +40,10 @@ let lastMouseY = 0;
 let initialPinchDistance = null;
 let lastTouchCenter = null;
 
+// 追加: タッチイベントでのドラッグ・ピンチ移動量保持用
+let touchStartPoint = null; 
+let touchStartMinX, touchStartMaxX, touchStartMinY, touchStartMaxY;
+
 const offscreenCanvas = document.createElement('canvas');
 offscreenCanvas.width = WIDTH;
 offscreenCanvas.height = HEIGHT;
@@ -487,6 +491,8 @@ canvas.addEventListener('mouseout', (e) => {
     }
 });
 
+let zoomTimeout; // ズーム用のタイムアウト変数
+
 canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
     offscreenCtx.drawImage(canvas, 0, 0);
@@ -522,11 +528,12 @@ canvas.addEventListener('wheel', (e) => {
     minY = cIm - (mouseY / HEIGHT) * newHeight;
     maxY = cIm + (1 - mouseY / HEIGHT) * newHeight;
     
-    clearTimeout(window.zoomTimeout);
-    window.zoomTimeout = setTimeout(() => {
+    clearTimeout(zoomTimeout);
+    zoomTimeout = setTimeout(() => {
         drawMandelbrot();
-    }, 200);
+    }, 100); // タイムアウトを短縮して即応性を高める
 });
+
 
 canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
@@ -535,11 +542,19 @@ canvas.addEventListener('touchstart', (e) => {
         const touch2 = e.touches[1];
         initialPinchDistance = Math.hypot(touch2.pageX - touch1.pageX, touch2.pageY - touch1.pageY);
         lastTouchCenter = { x: (touch1.clientX + touch2.clientX) / 2, y: (touch1.clientY + touch2.clientY) / 2 };
+        // 座標を保存しておく
+        touchStartMinX = minX;
+        touchStartMaxX = maxX;
+        touchStartMinY = minY;
+        touchStartMaxY = maxY;
         offscreenCtx.drawImage(canvas, 0, 0);
     } else if (e.touches.length === 1) {
         isDragging = true;
-        lastMouseX = e.touches[0].clientX;
-        lastMouseY = e.touches[0].clientY;
+        touchStartPoint = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        touchStartMinX = minX;
+        touchStartMaxX = maxX;
+        touchStartMinY = minY;
+        touchStartMaxY = maxY;
         offscreenCtx.drawImage(canvas, 0, 0);
     }
 });
@@ -552,8 +567,8 @@ canvas.addEventListener('touchmove', (e) => {
         const currentPinchDistance = Math.hypot(touch2.pageX - touch1.pageX, touch2.pageY - touch1.pageY);
         const scaleFactor = currentPinchDistance / initialPinchDistance;
 
-        const currentZoom = (initialMaxX - initialMinX) / (maxX - minX);
-        if (scaleFactor > 1 && currentZoom * zoomFactor > MAX_ZOOM) {
+        const currentZoom = (initialMaxX - initialMinX) / (touchStartMaxX - touchStartMinX);
+        if (scaleFactor > 1 && currentZoom * scaleFactor > MAX_ZOOM) {
             return;
         }
 
@@ -569,47 +584,53 @@ canvas.addEventListener('touchmove', (e) => {
         ctx.drawImage(offscreenCanvas, -centerX, -centerY);
         ctx.restore();
 
-        const oldWidth = maxX - minX;
-        const oldHeight = maxY - minY;
+        const oldWidth = touchStartMaxX - touchStartMinX;
+        const oldHeight = touchStartMaxY - touchStartMinY;
         const newWidth = oldWidth / scaleFactor;
         const newHeight = oldHeight / scaleFactor;
         
-        const cRe = minX + (centerX / WIDTH) * oldWidth;
-        const cIm = minY + (centerY / HEIGHT) * oldHeight;
+        const cRe = touchStartMinX + (centerX / WIDTH) * oldWidth;
+        const cIm = touchStartMinY + (centerY / HEIGHT) * oldHeight;
 
         minX = cRe - (centerX / WIDTH) * newWidth;
         maxX = cRe + (1 - centerX / WIDTH) * newWidth;
         minY = cIm - (centerY / HEIGHT) * newHeight;
-        maxY = cIm + (1 - mouseY / HEIGHT) * newHeight;
-        
-        initialPinchDistance = currentPinchDistance;
+        maxY = cIm + (1 - centerY / HEIGHT) * newHeight;
+
         updateZoomDisplay();
 
     } else if (e.touches.length === 1 && isDragging) {
-        const dx = e.touches[0].clientX - lastMouseX;
-        const dy = e.touches[0].clientY - lastMouseY;
+        const dx = e.touches[0].clientX - touchStartPoint.x;
+        const dy = e.touches[0].clientY - touchStartPoint.y;
 
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, WIDTH, HEIGHT);
         ctx.drawImage(offscreenCanvas, dx, dy);
-
-        const width = maxX - minX;
-        const height = maxY - minY;
-        minX -= dx / WIDTH * width;
-        maxX -= dx / WIDTH * width;
-        minY -= dy / HEIGHT * height;
-        maxY -= dy / HEIGHT * height;
-        lastMouseX = e.touches[0].clientX;
-        lastMouseY = e.touches[0].clientY;
+        updateZoomDisplay();
     }
 });
 
-canvas.addEventListener('touchend', () => {
-    isDragging = false;
+canvas.addEventListener('touchend', (e) => {
+    if (isDragging) {
+        isDragging = false;
+        const dx = e.changedTouches[0].clientX - touchStartPoint.x;
+        const dy = e.changedTouches[0].clientY - touchStartPoint.y;
+        
+        const width = touchStartMaxX - touchStartMinX;
+        const height = touchStartMaxY - touchStartMinY;
+        minX = touchStartMinX - dx / WIDTH * width;
+        maxX = touchStartMaxX - dx / WIDTH * width;
+        minY = touchStartMinY - dy / HEIGHT * height;
+        maxY = touchStartMaxY - dy / HEIGHT * height;
+    }
+
     initialPinchDistance = null;
     lastTouchCenter = null;
+    touchStartPoint = null;
+    
     drawMandelbrot();
 });
+
 
 maxIterationsSlider.addEventListener('input', () => {
     maxIterations = parseInt(maxIterationsSlider.value);
